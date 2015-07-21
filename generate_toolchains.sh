@@ -4,18 +4,23 @@
 # USER HOSTNAME = (root) NOPASSWD: /usr/bin/apt-get
 # USER HOSTNAME = (root) NOPASSWD: /usr/bin/make
 
-TC="arm-unknown-linux-gnueabi \
-    arm-unknown-linux-uclibcgnueabi 
-    arm-unknown-linux-uclibcgnueabihf"
+set -e
+
+TC="arm-unknown-eabi \
+	arm-unknown-linux-uclibcgnueabi
+	arm-unknown-linux-gnueabi
+	arm-unknown-linux-uclibcgnueabihf"
 
 DEST=.
 CWD=$PWD
 CTVER=1.20.0 # v1.21 doesn't seem to build correctly on Ubuntu 14.04
 URL=http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-${CTVER}.tar.bz2
-XDIR=${HOME}/x-tools
+XDIR=${CWD}/crosstool-ng-${CTVER}/x-tools
+PATH="/usr/bin":$PATH # make sure latest makeinfo/texinfo runs
 
 if [ -d crosstool-ng-${CTVER} ]; then
    echo 'Deleting old crosstool-ng.'
+   chmod 777 -R crosstool-ng-${CTVER}
    rm -rf crosstool-ng-${CTVER}
 fi
 
@@ -26,7 +31,7 @@ if [ -d ${XDIR} ]; then
 fi
 
 wget -qO- ${URL} | tar -C ${DEST} -xvjf -
-sudo apt-get install -y gperf bison flex texinfo gawk libtool automake libncurses5-dev g++ libexpat1-dev
+sudo apt-get install -y gperf bison flex texinfo gawk libtool automake libncurses5-dev g++ libexpat1-dev python2.7-dev
 
 cd crosstool-ng-${CTVER}
 ./configure
@@ -35,16 +40,13 @@ sudo make install
 
 for tc in $TC
 do
-	ct-ng $tc
+	ct-ng distclean
+	ct-ng defconfig DEFCONFIG=${PWD}/../$tc.defconfig
 	ct-ng build
-done
-
-cd ${XDIR}
-
-for tc in $TC
-do
+	cd ${XDIR}
 	tar -czf ${tc}.tar.gz ${tc}
 	mv ${tc}.tar.gz ${CWD}
+	cd ${CWD}/crosstool-ng-${CTVER}
 done
 
 cd ${CWD}
