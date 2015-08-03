@@ -28,7 +28,7 @@ if [ -d ${XDIR} ]; then
 fi
 
 wget -qO- ${URL} | tar -C ${DEST} -xvjf -
-#sudo apt-get install -y gperf bison flex texinfo gawk libtool automake libncurses5-dev g++ libexpat1-dev python2.7-dev
+#sudo apt-get install -y gperf bison flex texinfo gawk libtool automake libncurses5-dev g++ libexpat1-dev python2.7-dev make
 
 cd crosstool-ng-${CTVER}
 ./configure --prefix ${CROSSTOOLPATH} 
